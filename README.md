@@ -348,9 +348,12 @@ Convenciones del proyecto:
 ## Licencia
 
 Este módulo es software libre y gratuito. Se distribuye bajo la **GNU Lesser
-General Public License v3.0 (LGPL-3.0)**; el texto completo está en
-[`LICENSE`](LICENSE) y la declaración del addon en `__manifest__.py`.
+General Public License v3.0 (LGPL-3.0)**, cuyo texto está en
+[`LICENSE`](LICENSE); los términos de la GNU GPL v3.0 que complementan la LGPL
+están en [`COPYING`](COPYING). La declaración del addon está en
+`__manifest__.py`.
 
-Puedes usarlo, modificarlo y redistribuirlo bajo los términos de esa licencia.
+Copyright (C) 2026 ssant0. Puedes usarlo, modificarlo y redistribuirlo bajo los
+términos de esa licencia.
 
 Autor: [ssant0](https://github.com/ssant0).
