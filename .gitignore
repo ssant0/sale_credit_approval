@@ -1,0 +1,97 @@
+# ---------------------------------------------------------------------------
+# Python / Odoo
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# Artefactos de ejecución de Odoo
+*.log
+odoo.log
+*.pid
+*.dump
+*.sql
+*.sql.gz
+*.tar.gz
+*.zip
+filestore/
+backups/
+
+# Configuración local de Odoo (puede contener credenciales)
+.odoorc
+odoo.conf
+
+# Traducciones compiladas
+*.mo
+
+# ---------------------------------------------------------------------------
+# Secretos y entorno local
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------------------------------------------------------------------------
+# Pruebas, cobertura y calidad
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+.cache/
+
+# ---------------------------------------------------------------------------
+# Herramientas locales de IA / agentes
+# ---------------------------------------------------------------------------
+.agents/
+skills-lock.json
+
+# ---------------------------------------------------------------------------
+# macOS
+# ---------------------------------------------------------------------------
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# ---------------------------------------------------------------------------
+# Editores / IDEs
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# ---------------------------------------------------------------------------
+# Archivos temporales de merges y respaldos
+# ---------------------------------------------------------------------------
+*.bak
+*.orig
+*.rej

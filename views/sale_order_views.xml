@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_credit_gate" model="ir.ui.view">
+        <field name="name">sale.order.form.credit.gate</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_request_credit_approval"
+                        string="Solicitar aprobación de crédito"
+                        type="object"
+                        class="btn-primary"
+                        groups="sales_team.group_sale_salesman"
+                        invisible="not credit_gate_required or credit_gate_state in ('pending', 'approved') or state not in ('draft', 'sent')"/>
+                <button name="action_approve_credit"
+                        string="Aprobar crédito"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not credit_gate_is_approver or credit_gate_state != 'pending' or state not in ('draft', 'sent')"/>
+                <button name="action_reject_credit"
+                        string="Rechazar crédito"
+                        type="object"
+                        invisible="not credit_gate_is_approver or credit_gate_state != 'pending' or state not in ('draft', 'sent')"/>
+            </xpath>
+
+            <xpath expr="//header" position="after">
+                <div class="alert alert-warning" role="alert"
+                     invisible="not credit_gate_message or state not in ('draft', 'sent')">
+                    <field name="credit_gate_message" readonly="1"/>
+                </div>
+            </xpath>
+
+            <xpath expr="//page[@name='other_information']" position="inside">
+                <group string="Aprobación de crédito" name="credit_approval_info">
+                    <field name="credit_gate_required" readonly="1"/>
+                    <field name="credit_gate_state" readonly="1"/>
+                    <field name="credit_gate_approved_by" readonly="1"/>
+                    <field name="credit_gate_approved_date" readonly="1"/>
+                    <field name="credit_gate_is_approver" invisible="1"/>
+                </group>
+            </xpath>
+
+            <!-- Ocultar enviar / imprimir / vista previa sin aprobación -->
+            <xpath expr="//button[@id='quotation_send_primary']" position="attributes">
+                <attribute name="invisible">state != 'draft' or (credit_gate_required and credit_gate_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//button[@id='send_proforma_primary']" position="attributes">
+                <attribute name="invisible">state != 'draft' or invoice_count &gt;= 1 or (credit_gate_required and credit_gate_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//button[@id='send_proforma']" position="attributes">
+                <attribute name="invisible">state == 'draft' or invoice_count &gt;= 1 or (credit_gate_required and credit_gate_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//button[@id='quotation_send']" position="attributes">
+                <attribute name="invisible">state not in ('sent', 'sale') or (credit_gate_required and credit_gate_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//button[@name='sale.action_report_saleorder']" position="attributes">
+                <attribute name="invisible">state == 'sale' or (credit_gate_required and credit_gate_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_preview_sale_order']" position="attributes">
+                <attribute name="invisible">credit_gate_required and credit_gate_state != 'approved'</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

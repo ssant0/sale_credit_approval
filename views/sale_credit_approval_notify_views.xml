@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_credit_approval_notify_form" model="ir.ui.view">
+        <field name="name">sale.credit.approval.notify.form</field>
+        <field name="model">sale.credit.approval.notify</field>
+        <field name="arch" type="xml">
+            <form string="Solicitud de aprobación de crédito">
+                <field name="message" readonly="1" nolabel="1"/>
+                <field name="email_sent" invisible="1"/>
+                <field name="whatsapp_url" invisible="1"/>
+                <field name="has_phone" invisible="1"/>
+                <footer>
+                    <button name="action_open_whatsapp"
+                            string="Notificar por WhatsApp"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not has_phone"/>
+                    <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

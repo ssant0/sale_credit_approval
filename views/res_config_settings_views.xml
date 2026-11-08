@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sale.credit.gate</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='pay_invoice_online_setting_container']" position="after">
+                <block title="Aprobación de crédito en ventas" id="sale_credit_approval">
+                    <setting id="credit_gate_enabled_setting"
+                             string="Requerir aprobación para ventas a crédito"
+                             help="Las cotizaciones con un plazo distinto al de contado requieren la aprobación del usuario seleccionado.">
+                        <field name="credit_gate_enabled"/>
+                    </setting>
+                    <setting id="credit_gate_cash_term_setting"
+                             string="Plazo de contado"
+                             help="Plazo que se considera pago de contado. Cualquier otro plazo se trata como venta a crédito."
+                             invisible="not credit_gate_enabled">
+                        <field name="credit_gate_cash_term_id"
+                               options="{'no_create': True}"/>
+                    </setting>
+                    <setting id="credit_gate_user_setting"
+                             string="Aprobador de crédito"
+                             help="Solo este usuario puede aprobar o rechazar el crédito. Debe tener acceso a Ventas."
+                             invisible="not credit_gate_enabled">
+                        <field name="credit_gate_user_id"
+                               options="{'no_create': True, 'no_open': True}"/>
+                    </setting>
+                    <setting id="credit_gate_whatsapp_setting"
+                             string="WhatsApp del aprobador"
+                             help="Número con código de país, sin + ni espacios (ej. 526681234567). Si se deja vacío, se usa el teléfono del aprobador."
+                             invisible="not credit_gate_enabled">
+                        <field name="credit_gate_whatsapp" placeholder="526681234567"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
