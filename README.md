@@ -1,359 +1,361 @@
-# 💳 Aprobación de Crédito en Ventas
+# 💳 Credit Approval in Sales
 
-Addon de Odoo 19 que bloquea confirmar, enviar, imprimir o previsualizar una
-cotización a crédito hasta que el aprobador configurado la autorice.
+**English** · [Español](README.es.md)
 
-![Versión](https://img.shields.io/badge/version-19.0.1.0.0-blue?style=flat-square)
+Odoo 19 addon that blocks confirming, sending, printing, or previewing a credit
+quotation until the configured approver authorizes it.
+
+![Version](https://img.shields.io/badge/version-19.0.1.0.0-blue?style=flat-square)
 ![Odoo](https://img.shields.io/badge/Odoo-19.0-714B67?style=flat-square&logo=odoo&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13%2B-4169E1?style=flat-square&logo=postgresql&logoColor=white)
-![Licencia](https://img.shields.io/badge/license-LGPL--3.0-blue?style=flat-square)
-![Verificación](https://img.shields.io/badge/verificaci%C3%B3n-manual-lightgrey?style=flat-square)
+![License](https://img.shields.io/badge/license-LGPL--3.0-blue?style=flat-square)
+![Verification](https://img.shields.io/badge/verification-manual-lightgrey?style=flat-square)
 
-## Descripción
+## Description
 
-Este módulo agrega un control de crédito sobre el flujo de ventas de Odoo:
-cualquier cotización cuyo plazo de pago sea distinto al plazo de contado
-configurado queda bloqueada hasta que un usuario aprobador la autorice. Está
-pensado para empresas que venden a crédito y necesitan una aprobación explícita
-antes de comprometer la cobranza. La regla es global, se configura desde
-Contabilidad y es independiente del límite de crédito nativo de Odoo.
+This module adds a credit control on top of Odoo's sales flow: any quotation
+whose payment term differs from the configured cash term is blocked until an
+approver user authorizes it. It is intended for companies that sell on credit
+and need explicit approval before committing receivables. The rule is global,
+configured from Accounting, and independent of Odoo's native credit limit.
 
-## Tabla de contenido
+## Table of contents
 
-- [Descripción](#descripción)
-- [Stack tecnológico](#stack-tecnológico)
-- [Requisitos previos](#requisitos-previos)
-- [Instalación](#instalación)
-- [Variables de configuración](#variables-de-configuración)
-- [Uso y desarrollo](#uso-y-desarrollo)
-- [Comandos disponibles](#comandos-disponibles)
-- [Cómo funciona](#cómo-funciona)
-- [Referencia del módulo](#referencia-del-módulo)
-- [Solución de problemas](#solución-de-problemas)
-- [Limitaciones](#limitaciones)
-- [Contribuir](#contribuir)
-- [Licencia](#licencia)
+- [Description](#description)
+- [Tech stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration variables](#configuration-variables)
+- [Usage and development](#usage-and-development)
+- [Available commands](#available-commands)
+- [How it works](#how-it-works)
+- [Module reference](#module-reference)
+- [Troubleshooting](#troubleshooting)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Stack tecnológico
+## Tech stack
 
-- **Odoo 19.0** — framework de aplicación y ORM.
-- **Python 3.10+** — lógica del servidor.
-- **XML de vistas de Odoo** — botones, avisos y pantalla de ajustes.
-- **PostgreSQL 13+** — base de datos.
-- **SMTP** — envío del correo de solicitud de aprobación.
-- **WhatsApp (`wa.me`)** — notificación alternativa al aprobador.
+- **Odoo 19.0** — application framework and ORM.
+- **Python 3.10+** — server-side logic.
+- **Odoo view XML** — buttons, alerts, and the settings screen.
+- **PostgreSQL 13+** — database.
+- **SMTP** — sending the approval request email.
+- **WhatsApp (`wa.me`)** — alternative notification to the approver.
 
-## Requisitos previos
+## Prerequisites
 
-- Odoo **19.0** funcionando (Community o Enterprise).
-- Python **3.10 o superior**, el requerido por tu instalación de Odoo 19.
-- PostgreSQL **13 o superior**.
-- `wkhtmltopdf` **0.12.6** si vas a usar la impresión de PDF (Odoo lo requiere
-  para los reportes; este módulo intercepta esos reportes).
-- Un directorio declarado en `addons_path` donde colocar el módulo.
-- Para la notificación completa:
-  - Servidor **SMTP** configurado y un correo válido en el aprobador.
-  - `web.base.url` apuntando al dominio público de la instancia.
-- El usuario aprobador debe tener acceso al módulo **Ventas** para poder abrir
-  la orden y ver los botones de aprobación.
+- Odoo **19.0** running (Community or Enterprise).
+- Python **3.10 or higher**, as required by your Odoo 19 installation.
+- PostgreSQL **13 or higher**.
+- `wkhtmltopdf` **0.12.6** if you are going to use PDF printing (Odoo requires
+  it for reports; this module intercepts those reports).
+- A directory declared in `addons_path` where you place the module.
+- For full notification:
+  - **SMTP** server configured and a valid email address for the approver.
+  - `web.base.url` pointing to the instance's public domain.
+- The approver user must have access to the **Sales** module to be able to open
+  the order and see the approval buttons.
 
-## Instalación
+## Installation
 
-1. Clona el repositorio (o copia/enlaza la carpeta) dentro de un directorio de
-   tu `addons_path`. El nombre de la carpeta debe ser exactamente
+1. Clone the repository (or copy/link the folder) inside one of your
+   `addons_path` directories. The folder name must be exactly
    `sale_credit_approval`:
 
    ```bash
-   # Opción 1: clonar el repositorio
+   # Option 1: clone the repository
    git clone https://github.com/ssant0/sale_credit_approval.git \
      /opt/odoo/custom-addons/sale_credit_approval
 
-   # Opción 2: copiar el código
-   cp -R /ruta/a/sale_credit_approval /opt/odoo/custom-addons/sale_credit_approval
+   # Option 2: copy the code
+   cp -R /path/to/sale_credit_approval /opt/odoo/custom-addons/sale_credit_approval
 
-   # Opción 3: enlazar el código fuente para desarrollo
-   ln -s /ruta/a/sale_credit_approval /opt/odoo/custom-addons/sale_credit_approval
+   # Option 3: link the source code for development
+   ln -s /path/to/sale_credit_approval /opt/odoo/custom-addons/sale_credit_approval
    ```
 
-2. Agrega el directorio a `addons_path` en tu configuración de Odoo:
+2. Add the directory to `addons_path` in your Odoo configuration:
 
    ```ini
    [options]
    addons_path = /opt/odoo/addons,/opt/odoo/custom-addons
    ```
 
-3. Instala el módulo en la base de datos:
+3. Install the module in the database:
 
    ```bash
-   odoo -c /etc/odoo/odoo.conf -d mi_base -i sale_credit_approval --stop-after-init
+   odoo -c /etc/odoo/odoo.conf -d my_db -i sale_credit_approval --stop-after-init
    ```
 
-   Si no tienes el binario `odoo` en el `PATH`:
+   If you do not have the `odoo` binary in your `PATH`:
 
    ```bash
-   python3 /ruta/a/odoo/odoo-bin -c /etc/odoo/odoo.conf -d mi_base \
+   python3 /path/to/odoo/odoo-bin -c /etc/odoo/odoo.conf -d my_db \
      -i sale_credit_approval --stop-after-init
    ```
 
-4. Reinicia el servicio de Odoo:
+4. Restart the Odoo service:
 
    ```bash
    sudo systemctl restart odoo
    ```
 
-5. Entra a Odoo y configura el módulo en
+5. Open Odoo and configure the module in
    **Contabilidad → Ajustes → Aprobación de crédito en ventas**.
 
 > [!IMPORTANT]
-> El nombre técnico es `sale_credit_approval` (carpeta y prefijo de los
-> parámetros de configuración). En la lista de Aplicaciones el módulo aparece
-> como **Aprobación de Crédito en Ventas**.
+> The technical name is `sale_credit_approval` (folder and configuration
+> parameter prefix). In the Apps list the module appears as
+> **Aprobación de Crédito en Ventas**. The module's UI text is in Spanish, so
+> menu paths are shown as they appear in Odoo.
 
-## Variables de configuración
+## Configuration variables
 
-Este addon **no usa variables de entorno ni archivo `.env`**. Toda su
-configuración son parámetros globales de `ir.config_parameter`, editables desde
+This addon **does not use environment variables or a `.env` file**. All of its
+configuration lives in global `ir.config_parameter` parameters, editable from
 **Contabilidad → Ajustes → Aprobación de crédito en ventas**.
 
-| Parámetro | Descripción | Entorno | Requerido |
+| Parameter | Description | Environment | Required |
 |---|---|---|---|
-| `sale_credit_approval.enabled` | Activa la regla para toda la base de datos | Todos | Sí |
-| `sale_credit_approval.cash_term_id` | ID del plazo de pago que se considera contado. Si falta, se usa “Pago inmediato” | Todos | No |
-| `sale_credit_approval.user_id` | ID del usuario que puede aprobar o rechazar el crédito | Todos | Sí, para operar la regla |
-| `sale_credit_approval.whatsapp` | Número del aprobador con código de país, sin `+` ni espacios (ej. `526681234567`). Si está vacío se usa su teléfono | Todos | No |
+| `sale_credit_approval.enabled` | Enables the rule for the whole database | All | Yes |
+| `sale_credit_approval.cash_term_id` | ID of the payment term considered as cash. If missing, "Immediate Payment" is used | All | No |
+| `sale_credit_approval.user_id` | ID of the user who can approve or reject the credit | All | Yes, to operate the rule |
+| `sale_credit_approval.whatsapp` | Approver's number with country code, without `+` or spaces (e.g. `526681234567`). If empty, their phone is used | All | No |
 
 > [!IMPORTANT]
-> Los parámetros son globales para toda la base de datos, no por compañía.
-> Cambiarlos afecta a todas las ventas.
+> The parameters are global for the whole database, not per company.
+> Changing them affects every sale.
 
-## Uso y desarrollo
+## Usage and development
 
-### Configuración inicial
+### Initial setup
 
-1. Ve a **Contabilidad → Ajustes → Aprobación de crédito en ventas**.
-2. Activa **Requerir aprobación para ventas a crédito**.
-3. Revisa el **Plazo de contado** (por defecto, “Pago inmediato”).
-4. Elige el **Aprobador de crédito**. Debe ser un usuario interno con acceso a
-   Ventas.
-5. Opcionalmente, define el **WhatsApp del aprobador**.
+1. Go to **Contabilidad → Ajustes → Aprobación de crédito en ventas**.
+2. Enable **Requerir aprobación para ventas a crédito**.
+3. Review the **Plazo de contado** (cash term; by default, "Pago inmediato").
+4. Choose the **Aprobador de crédito** (credit approver). It must be an
+   internal user with access to Sales.
+5. Optionally, set the **WhatsApp del aprobador** (approver's WhatsApp).
 
-### Flujo de aprobación
+### Approval flow
 
-1. El vendedor crea una cotización con un plazo de pago distinto al de contado.
-2. La orden muestra el aviso **“Venta a crédito: requiere aprobación…”**.
-3. El vendedor pulsa **Solicitar aprobación de crédito**. La orden pasa a
-   **Pendiente**, se envía un correo al aprobador y se abre un diálogo con el
-   botón de WhatsApp.
-4. El aprobador abre la orden y pulsa **Aprobar crédito** o **Rechazar
+1. The salesperson creates a quotation with a payment term different from the
+   cash term.
+2. The order shows the notice **"Venta a crédito: requiere aprobación…"**.
+3. The salesperson clicks **Solicitar aprobación de crédito**. The order moves
+   to **Pendiente** (pending), an email is sent to the approver, and a dialog
+   with the WhatsApp button opens.
+4. The approver opens the order and clicks **Aprobar crédito** or **Rechazar
    crédito**.
-5. Solo con la aprobación se puede confirmar la orden. Sin ella,
-   `action_confirm` se bloquea en el servidor.
+5. Only with the approval can the order be confirmed. Without it,
+   `action_confirm` is blocked on the server.
 
-### Desarrollo
+### Development
 
-Para trabajar con recarga automática de Python y XML:
+To work with automatic reloading of Python and XML:
 
 ```bash
-odoo -c /etc/odoo/odoo.conf -d mi_base -u sale_credit_approval --dev=all
+odoo -c /etc/odoo/odoo.conf -d my_db -u sale_credit_approval --dev=all
 ```
 
-Los cambios en modelos, vistas o archivos de datos **no se aplican solos** en
-producción: hay que actualizar el módulo.
+Changes to models, views, or data files **do not apply themselves** in
+production: the module must be updated.
 
-### Actualización en producción
+### Production update
 
 ```bash
-# 1. Respalda la base de datos
-pg_dump -Fc mi_base > mi_base_$(date +%F).dump
+# 1. Back up the database
+pg_dump -Fc my_db > my_db_$(date +%F).dump
 
-# 2. Actualiza el módulo y detén el servidor al terminar
-odoo -c /etc/odoo/odoo.conf -d mi_base -u sale_credit_approval --stop-after-init
+# 2. Update the module and stop the server when done
+odoo -c /etc/odoo/odoo.conf -d my_db -u sale_credit_approval --stop-after-init
 
-# 3. Reinicia el servicio
+# 3. Restart the service
 sudo systemctl restart odoo
 ```
 
-### Verificación manual
+### Manual verification
 
-No hay tests automatizados. Para validar un cambio, actualiza el módulo y
-recorre esta checklist:
+There are no automated tests. To validate a change, update the module and walk
+through this checklist:
 
-1. Crea una cotización con un plazo de pago a crédito (por ejemplo, 30 días).
-2. Debe aparecer el aviso “Venta a crédito: requiere aprobación…”.
-3. Pulsa **Solicitar aprobación de crédito**: debe llegar el correo y abrirse
-   el diálogo con el botón de WhatsApp.
-4. Entra como el aprobador, abre la orden y pulsa **Aprobar crédito**.
-5. Confirma la orden: debe permitirlo.
-6. Intenta confirmar otra orden a crédito sin aprobar: debe bloquearse.
-7. Una cotización con “Pago inmediato” no debe pedir aprobación.
-8. Intenta enviar, imprimir y previsualizar una orden pendiente: debe
-   bloquearse.
+1. Create a quotation with a credit payment term (for example, 30 days).
+2. The notice "Venta a crédito: requiere aprobación…" must appear.
+3. Click **Solicitar aprobación de crédito**: the email must arrive and the
+   dialog with the WhatsApp button must open.
+4. Log in as the approver, open the order, and click **Aprobar crédito**.
+5. Confirm the order: it must be allowed.
+6. Try to confirm another credit order without approving it: it must be
+   blocked.
+7. A quotation with "Pago inmediato" must not require approval.
+8. Try to send, print, and preview a pending order: it must be blocked.
 
-## Comandos disponibles
+## Available commands
 
-No hay `Makefile`, `package.json`, `justfile`, tests, CI, lint ni formatter. Los
-comandos útiles son los de la CLI de Odoo:
+There is no `Makefile`, `package.json`, `justfile`, tests, CI, lint, or
+formatter. The useful commands are the Odoo CLI ones:
 
-| Comando | Qué hace |
+| Command | What it does |
 |---|---|
-| `odoo -d mi_base -i sale_credit_approval --stop-after-init` | Instala el módulo |
-| `odoo -d mi_base -u sale_credit_approval --stop-after-init` | Actualiza el módulo tras cambios en modelos, vistas o datos |
-| `odoo -c /etc/odoo/odoo.conf -d mi_base -u sale_credit_approval --dev=all` | Inicia Odoo en modo desarrollo con recarga automática |
-| `odoo shell -d mi_base` | Abre una consola interactiva con el entorno de Odoo |
+| `odoo -d my_db -i sale_credit_approval --stop-after-init` | Installs the module |
+| `odoo -d my_db -u sale_credit_approval --stop-after-init` | Updates the module after changes to models, views, or data |
+| `odoo -c /etc/odoo/odoo.conf -d my_db -u sale_credit_approval --dev=all` | Starts Odoo in development mode with automatic reloading |
+| `odoo shell -d my_db` | Opens an interactive console with the Odoo environment |
 
 > [!NOTE]
-> La verificación real de este addon es manual: instalar o actualizar y recorrer
-> la checklist de [Verificación manual](#verificación-manual).
+> The real verification of this addon is manual: install or update and walk
+> the [Manual verification](#manual-verification) checklist.
 
-## Cómo funciona
+## How it works
 
-Una cotización es **a crédito** cuando se cumplen estas tres condiciones:
+A quotation is **on credit** when these three conditions are met:
 
-1. La regla está activa (`sale_credit_approval.enabled`).
-2. La orden tiene `payment_term_id` definido.
-3. El plazo es distinto del plazo de contado configurado.
+1. The rule is active (`sale_credit_approval.enabled`).
+2. The order has `payment_term_id` set.
+3. The term differs from the configured cash term.
 
-Sin plazo de pago, la orden **no** se considera a crédito. El módulo no evalúa
-montos: el límite de crédito nativo de Odoo (`credit_limit`) sigue siendo un
-aviso independiente.
+Without a payment term, the order is **not** considered on credit. The module
+does not evaluate amounts: Odoo's native credit limit (`credit_limit`) remains
+an independent warning.
 
-### Puntos de control en el servidor
+### Server-side checkpoints
 
-| Punto de entrada | Método interceptado | Resultado sin aprobación |
+| Entry point | Intercepted method | Result without approval |
 |---|---|---|
-| Confirmar orden | `sale.order.action_confirm` | `check_credit_approval()` lanza `UserError` |
-| Enviar cotización | `sale.order.action_quotation_send` | `_check_credit_gate_actions()` bloquea |
-| Previsualizar orden | `sale.order.action_preview_sale_order` | `_check_credit_gate_actions()` bloquea (mantiene `@api.readonly`) |
-| Imprimir / PDF | `ir.actions.report._render_qweb_pdf` | Bloquea cualquier reporte de `sale.order` |
-| Previsualizar reporte | `ir.actions.report._render_qweb_html` | Bloquea cualquier reporte de `sale.order` |
+| Confirm order | `sale.order.action_confirm` | `check_credit_approval()` raises `UserError` |
+| Send quotation | `sale.order.action_quotation_send` | `_check_credit_gate_actions()` blocks |
+| Preview order | `sale.order.action_preview_sale_order` | `_check_credit_gate_actions()` blocks (keeps `@api.readonly`) |
+| Print / PDF | `ir.actions.report._render_qweb_pdf` | Blocks any `sale.order` report |
+| Preview report | `ir.actions.report._render_qweb_html` | Blocks any `sale.order` report |
 
 > [!WARNING]
-> Ocultar botones en XML es solo cosmético. Cualquier ruta nueva de envío,
-> impresión o previsualización debe llamar a `_check_credit_gate_actions()` o al
-> helper correspondiente; de lo contrario se salta el control.
+> Hiding buttons in XML is only cosmetic. Any new send, print, or preview path
+> must call `_check_credit_gate_actions()` or the corresponding helper;
+> otherwise it bypasses the control.
 
-### Cuándo se reinicia la aprobación
+### When approval resets
 
-La aprobación vuelve a `none` si, después de aprobar, cambia cualquiera de
-estas condiciones:
+The approval goes back to `none` if, after approving, any of these conditions
+changes:
 
-- `sale.order.write` con `payment_term_id` o `partner_id`.
-- `sale.order.line.create` (nueva línea).
-- `sale.order.line.write` con `product_id`, `product_uom_qty`, `price_unit`,
-  `discount` o `tax_id`.
-- `sale.order.line.unlink` (eliminar línea).
+- `sale.order.write` with `payment_term_id` or `partner_id`.
+- `sale.order.line.create` (new line).
+- `sale.order.line.write` with `product_id`, `product_uom_qty`, `price_unit`,
+  `discount`, or `tax_id`.
+- `sale.order.line.unlink` (remove line).
 
-Si agregas un campo que modifique el importe de la venta, agrégalo también al
-filtro de reinicio en `models/sale_order_line.py`.
+If you add a field that changes the sale amount, add it to the reset filter in
+`models/sale_order_line.py` as well.
 
-### Bypass intencional
+### Intentional bypass
 
-Las confirmaciones hechas por el **superusuario** (`env.su` /
-`SUPERUSER_ID`) se permiten por diseño, para no romper automatizaciones,
-importaciones y procesos del sistema. No es un bug.
+Confirmations made by the **superuser** (`env.su` / `SUPERUSER_ID`) are allowed
+by design, so as not to break automations, imports, and system processes. It is
+not a bug.
 
-## Referencia del módulo
+## Module reference
 
-### Campos agregados a `sale.order`
+### Fields added to `sale.order`
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
-| `credit_gate_required` | Boolean (calculado) | `True` si la orden es a crédito y la regla está activa |
-| `credit_gate_state` | Selection | `none`, `pending`, `approved` o `rejected` |
-| `credit_gate_approved_by` | Many2one `res.users` | Usuario que aprobó el crédito |
-| `credit_gate_approved_date` | Datetime | Fecha y hora de la aprobación |
-| `credit_gate_is_approver` | Boolean (calculado) | `True` si el usuario actual es el aprobador configurado |
-| `credit_gate_message` | Char (calculado) | Aviso de estado mostrado en la orden |
+| `credit_gate_required` | Boolean (computed) | `True` if the order is on credit and the rule is active |
+| `credit_gate_state` | Selection | `none`, `pending`, `approved`, or `rejected` |
+| `credit_gate_approved_by` | Many2one `res.users` | User who approved the credit |
+| `credit_gate_approved_date` | Datetime | Date and time of the approval |
+| `credit_gate_is_approver` | Boolean (computed) | `True` if the current user is the configured approver |
+| `credit_gate_message` | Char (computed) | Status notice shown on the order |
 
-### Acciones
+### Actions
 
-| Método | Uso |
+| Method | Purpose |
 |---|---|
-| `action_request_credit_approval()` | Pasa la orden a `pending`, envía el correo y abre el diálogo de notificación |
-| `action_approve_credit()` | Aprueba el crédito; solo el aprobador y solo en estado `pending` |
-| `action_reject_credit()` | Rechaza el crédito; solo el aprobador y solo en estado `pending` |
-| `action_open_whatsapp()` | Abre el enlace `wa.me` desde el diálogo de notificación |
+| `action_request_credit_approval()` | Moves the order to `pending`, sends the email, and opens the notification dialog |
+| `action_approve_credit()` | Approves the credit; approver only, and only in `pending` state |
+| `action_reject_credit()` | Rejects the credit; approver only, and only in `pending` state |
+| `action_open_whatsapp()` | Opens the `wa.me` link from the notification dialog |
 
-### Modelo transitorio
+### Transient model
 
-`sale.credit.approval.notify` es el diálogo que aparece al solicitar la
-aprobación. Muestra el resumen de la orden, si el correo se envió y el botón de
-WhatsApp cuando hay un número disponible.
+`sale.credit.approval.notify` is the dialog shown when requesting approval. It
+displays the order summary, whether the email was sent, and the WhatsApp button
+when a number is available.
 
-### Mapa de archivos
+### File map
 
-| Archivo | Responsabilidad |
+| File | Responsibility |
 |---|---|
-| `models/credit_gate.py` | Toda la lógica del control: definición de crédito, aprobador, correo y WhatsApp |
-| `models/sale_order.py` | Campos, acciones y puntos de control de la orden |
-| `models/sale_order_line.py` | Reinicio de la aprobación por cambios en líneas |
-| `models/ir_actions_report.py` | Bloqueo de impresión y previsualización de reportes |
-| `models/res_config_settings.py` | Campos de configuración global |
-| `models/sale_credit_approval_notify.py` | Diálogo de notificación al aprobador |
-| `views/*.xml` | Botones, avisos y pantalla de ajustes |
-| `security/ir.model.access.csv` | Acceso al modelo transitorio de notificación |
+| `models/credit_gate.py` | All the control logic: credit definition, approver, email, and WhatsApp |
+| `models/sale_order.py` | Fields, actions, and order checkpoints |
+| `models/sale_order_line.py` | Approval reset on line changes |
+| `models/ir_actions_report.py` | Blocking of report printing and previewing |
+| `models/res_config_settings.py` | Global configuration fields |
+| `models/sale_credit_approval_notify.py` | Notification dialog for the approver |
+| `views/*.xml` | Buttons, notices, and the settings screen |
+| `security/ir.model.access.csv` | Access to the transient notification model |
 
-## Solución de problemas
+## Troubleshooting
 
-| Síntoma | Causa / solución |
+| Symptom | Cause / fix |
 |---|---|
-| No pide aprobación | La regla está apagada, el plazo es el de contado o no se guardó la configuración |
-| No aparece el botón “Aprobar crédito” | El usuario actual no es el aprobador configurado |
-| El aprobador no puede abrir la orden | No tiene acceso al módulo Ventas |
-| El correo no llega | SMTP sin configurar o el aprobador no tiene correo |
-| El enlace abre `localhost` | `web.base.url` no apunta al dominio público |
-| La aprobación desapareció | Se cambió el plazo, el cliente o una línea; hay que solicitar de nuevo |
-| No se puede imprimir ni previsualizar | Es el comportamiento esperado hasta que la orden esté aprobada |
+| It does not ask for approval | The rule is off, the term is the cash term, or the configuration was not saved |
+| The "Aprobar crédito" button does not appear | The current user is not the configured approver |
+| The approver cannot open the order | They do not have access to the Sales module |
+| The email does not arrive | SMTP not configured, or the approver has no email address |
+| The link opens `localhost` | `web.base.url` does not point to the public domain |
+| The approval disappeared | The term, the customer, or a line was changed; it must be requested again |
+| It cannot be printed or previewed | This is the expected behavior until the order is approved |
 
-## Limitaciones
+## Limitations
 
-- La regla se basa en el **plazo de pago**, no en el monto. El límite de crédito
-  nativo de Odoo sigue siendo solo un aviso y es independiente.
-- No cubre confirmaciones automáticas hechas por el sistema (superusuario).
-- Hay un **único aprobador global**; no se configura por compañía, equipo ni
-  vendedor.
-- Si el aprobador es el mismo vendedor, puede aprobar su propia venta. Es una
-  decisión de configuración, no un bug.
-- No hay tests automatizados, CI, lint ni formatter; la verificación es manual.
+- The rule is based on the **payment term**, not the amount. Odoo's native
+  credit limit remains only a warning and is independent.
+- It does not cover automatic confirmations made by the system (superuser).
+- There is a **single global approver**; it is not configured per company,
+  team, or salesperson.
+- If the approver is the same salesperson, they can approve their own sale. It
+  is a configuration decision, not a bug.
+- There are no automated tests, CI, lint, or formatter; verification is manual.
 
-## Contribuir
+## Contributing
 
-1. Crea una rama desde la principal con un nombre descriptivo:
-   - `feat/<descripcion-corta>` para funcionalidad nueva.
-   - `fix/<descripcion-corta>` para correcciones.
-   - `docs/<descripcion-corta>` para documentación.
-2. Sigue **Conventional Commits**:
+1. Create a branch from the main one with a descriptive name:
+   - `feat/<short-description>` for new functionality.
+   - `fix/<short-description>` for fixes.
+   - `docs/<short-description>` for documentation.
+2. Follow **Conventional Commits**:
 
    ```text
-   feat: bloquear previsualización sin aprobación
-   fix: reiniciar aprobación al cambiar impuestos de una línea
-   docs: documentar parámetros de configuración
+   feat: block preview without approval
+   fix: reset approval when a line's taxes change
+   docs: document configuration parameters
    ```
 
-3. Mantén el cambio enfocado. Si tocas modelos, vistas o datos, actualiza el
-   módulo y recorre la checklist de verificación manual.
-4. Si cambia el comportamiento o la arquitectura, actualiza `README.md` y
-   `AGENTS.md` en el mismo cambio.
-5. Abre el PR explicando **qué** cambia, **por qué** y **cómo lo probaste**.
+3. Keep the change focused. If you touch models, views, or data, update the
+   module and walk the manual verification checklist.
+4. If the behavior or architecture changes, update `README.md`,
+   `README.es.md`, and `AGENTS.md` in the same change.
+5. Open the PR explaining **what** changes, **why**, and **how you tested it**.
 
-Convenciones del proyecto:
+Project conventions:
 
-- Los textos visibles para el usuario van en **español**.
-- Las vistas usan la sintaxis de Odoo 19: `invisible="..."` y
-  `readonly="..."`, nunca `attrs`.
-- La lógica del control vive en `models/credit_gate.py`; los demás modelos solo
-  la conectan.
+- User-facing text is in **Spanish**.
+- Views use Odoo 19 syntax: `invisible="..."` and `readonly="..."`, never
+  `attrs`.
+- The control logic lives in `models/credit_gate.py`; the other models only
+  wire it in.
 
-## Licencia
+## License
 
-Este módulo es software libre y gratuito. Se distribuye bajo la **GNU Lesser
-General Public License v3.0 (LGPL-3.0)**, cuyo texto está en
-[`LICENSE`](LICENSE); los términos de la GNU GPL v3.0 que complementan la LGPL
-están en [`COPYING`](COPYING). La declaración del addon está en
-`__manifest__.py`.
+This module is free and open-source software. It is distributed under the
+**GNU Lesser General Public License v3.0 (LGPL-3.0)**, whose text is in
+[`LICENSE`](LICENSE); the GNU GPL v3.0 terms that complement the LGPL are in
+[`COPYING`](COPYING). The addon's declaration is in `__manifest__.py`.
 
-Copyright (C) 2026 ssant0. Puedes usarlo, modificarlo y redistribuirlo bajo los
-términos de esa licencia.
+Copyright (C) 2026 ssant0. You may use, modify, and redistribute it under the
+terms of that license.
 
-Autor: [ssant0](https://github.com/ssant0).
+Author: [ssant0](https://github.com/ssant0).
